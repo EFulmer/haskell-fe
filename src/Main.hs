@@ -34,8 +34,23 @@ dmg char = if length (char ^. items) > 0
     then Just $ char ^. (stats . pow) + (char ^. items) !! 0 ^. mt
     else Nothing
 
-critAvo :: Character -> Int
-critAvo char = char ^. (stats . lck)
+critAvoid :: Character -> Int
+critAvoid char = char ^. (stats . lck)
+
+accuracy :: Character -> Int
+accuracy char = (char ^. (stats . skl) * 2) + 
+    (char ^. (stats . lck) `div` 2) +
+    (char ^. items) !! 0 ^. hit
+
+-- No weapon triangle yet
+hitRate :: Character -> Character -> Int
+hitRate attacker defender = max (accuracy attacker - avoid defender) 0
+
+-- again, no weapon triangle
+damageDone :: Character -> Character -> Int
+damageDone attacker defender = case dmg attacker of
+    (Just atk) -> atk - (defender ^. (stats . def))
+    Nothing    -> 0
 
 combat :: (Character, Character) -> (Character, Character)
 combat (attacker, defender) = undefined
