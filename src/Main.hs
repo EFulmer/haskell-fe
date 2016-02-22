@@ -1,4 +1,3 @@
-{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE Rank2Types #-}
 module Main where
 import Control.Lens
@@ -6,6 +5,8 @@ import System.Random
 import Examples
 import Types
 
+-- need Rank2Types for the Lens' in the type signature, which needs to be 
+-- provided
 levelAStat :: Character -> (Lens' Stats Int) -> Int -> Character
 levelAStat char stat roll = 
     if (char ^. (growths . stat)) < roll
