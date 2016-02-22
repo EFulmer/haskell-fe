@@ -30,6 +30,10 @@ data Weapon = Weapon
     , _crit :: Int
     , _rng :: (Int, Int) } deriving Show -- range = (min, max)
 
+data BattleResult = BattleResult 
+    { _winner :: Character
+    , _loser :: Character } deriving Show
+
 data WeaponType = Physical PhysWeapon | Magical MagWeapon deriving (Show, Eq)
 
 data PhysWeapon = Sword | Lance | Axe | Bow deriving (Show, Eq)
@@ -39,3 +43,4 @@ data MagWeapon = Light | Dark | Anima deriving (Show, Eq)
 makeLenses ''Character
 makeLenses ''Stats
 makeLenses ''Weapon
+makeLenses ''BattleResult

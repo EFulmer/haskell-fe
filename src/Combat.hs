@@ -42,11 +42,23 @@ damageDone attacker defender = case dmg attacker of
     (Just atk) -> atk - (defender ^. (stats . def))
     Nothing    -> 0
 
--- run one "phase" of one turn of combat
-combat :: (RandomGen g) => (Character, Character) -- (attacker, defender)
+calcExp :: (Character, Character) -> CombatOutcome -> Int
+calcExp (attacker, defender) outcome = 
+    case outcome of
+        Miss    -> 1
+        Hit     -> (31 + ((defender ^. level) + classBonusA) - 
+            ((attacker ^. level) + classBonusA)) `div` classPower
+        Victory -> 0 
+    where 
+        classBonusA = 0 -- TODO 
+        classBonusB = 0 -- TODO
+        classPower  = 3 -- TODO
+
+-- run one half of a turn of combat: one character attacks, the other defends
+battleRound :: (RandomGen g) => (Character, Character) -- (attacker, defender)
     -> g 
     -> (Character, Character)
-combat (attacker, defender) gen = let
+battleRound (attacker, defender) gen = let
     [hit, crit] = take 2 $ randomRs (1, 100) gen
     attackHit   = hit <= (hitRate attacker defender)
     atk         = damageDone attacker defender
@@ -55,3 +67,6 @@ combat (attacker, defender) gen = let
     newDefender = curHP -~ dmgDone $ defender
     in
     (attacker, newDefender)
+
+battle :: (RandomGen g) => (Character, Character) -> g -> BattleResult
+battle = undefined
