@@ -76,9 +76,10 @@ combat (attacker, defender) gen = let
     atk         = damageDone attacker defender
     critHit     = attackHit && (crit <= critRate attacker defender)
     dmgDone     = (fromEnum attackHit) * atk * (succ (fromEnum critHit)) * 3
+    newDefender = curHP -~ dmgDone $ defender
     in
-    undefined
-
+    (attacker, newDefender)
+    
 -- TBD!
 main :: IO ()
 main = undefined
