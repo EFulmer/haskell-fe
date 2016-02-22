@@ -39,4 +39,3 @@ data MagWeapon = Light | Dark | Anima deriving (Show, Eq)
 makeLenses ''Character
 makeLenses ''Stats
 makeLenses ''Weapon
-
