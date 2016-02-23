@@ -69,10 +69,10 @@ whoDoubles (char1, char2)
         spd2 = char2 ^. (stats . spd)
 
 -- run one half of a turn of combat: one character attacks, the other defends
-attack :: (RandomGen g) => (Character, Character) -- (attacker, defender)
+attackRNG :: (RandomGen g) => (Character, Character) -- (attacker, defender)
     -> g 
-    -> (Character, Character)
-attack (attacker, defender) gen = let
+    -> (Character, Character) -- in the same order
+attackRNG (attacker, defender) gen = let
     [hit, crit] = take 2 $ randomRs (1, 100) gen
     attackHit   = hit <= (hitRate attacker defender)
     atk         = damageDone attacker defender
@@ -82,6 +82,32 @@ attack (attacker, defender) gen = let
     in
     (attacker, newDefender)
 
+attack :: (Character, Character) -> Int -> Int -> (Character, Character)
+attack (attacker, defender) hitRoll critRoll
+    | hitRoll <= hitChance = if critRoll <= critChance
+                            then (attacker, (curHP -~ (damage * 3)) defender)
+                            else (attacker, (curHP -~ damage) defender)
+    | otherwise            = (attacker, defender)    
+    where
+        hitChance  = hitRate attacker defender
+        critChance = critRate attacker defender
+        damage     = damageDone attacker defender
+
+roundOfBattle :: (RandomGen g) => (Character, Character) -- (1st to attack, 2nd)
+    -> g
+    -> (Character, Character)
+roundOfBattle (char1, char2) gen = case whoDoubles (char1, char2) of
+    Just char -> if char ^. name == char1 ^. name
+                    -- If first character is doubling:
+                    then undefined
+                    else undefined
+    Nothing   -> let 
+                (gen', gen'')    = split gen
+                (char1', char2') = attackRNG (char1, char2) gen'
+                (char2'', char1'') = attackRNG (char1', char2') gen''
+                in
+                (char1'', char2'')
+
 battle :: (RandomGen g) => (Character, Character) -> g -> BattleResult
 battle (char1, char2) gen = case char1 ^. curHP <= 0 of
     True  -> BattleResult { _winner = char2, _loser = char1 }
@@ -90,4 +116,4 @@ battle (char1, char2) gen = case char1 ^. curHP <= 0 of
         False -> battle (newAttacker, newDefender) gen''
     where
         (gen', gen'') =  split gen
-        (newDefender, newAttacker) = attack (char1, char2) gen' 
+        (newDefender, newAttacker) = attackRNG (char1, char2) gen' 
