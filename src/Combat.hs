@@ -32,7 +32,7 @@ hitRate attacker defender = max (accuracy attacker - avoid defender) 0
 
 critRate :: Character -> Character -> Int
 critRate attacker defender = case critical attacker of
-    (Just crt) -> crt - (critAvoid defender)
+    (Just crt) -> max 0 $ crt - (critAvoid defender)
     Nothing    -> 0
 
 -- again, no weapon triangle
@@ -68,7 +68,20 @@ whoDoubles (char1, char2)
         spd1 = char1 ^. (stats . spd)
         spd2 = char2 ^. (stats . spd)
 
--- run one half of a turn of combat: one character attacks, the other defends
+roundOfBattle :: (RandomGen g) => (Character, Character) -- (1st to attack, 2nd)
+    -> g
+    -> (Character, Character)
+roundOfBattle (char1, char2) gen = case whoDoubles (char1, char2) of
+    Just char -> if char ^. name == char1 ^. name
+                    -- If first character is doubling:
+                    then undefined
+                    else undefined
+    Nothing   -> let 
+                (gen', gen'')    = split gen
+                (char1', char2') = attackRNG (char1, char2) gen'
+                (char2'', char1'') = attackRNG (char1', char2') gen''
+                in
+                (char1'', char2'')
 attackRNG :: (RandomGen g) => (Character, Character) -- (attacker, defender)
     -> g 
     -> (Character, Character) -- in the same order
@@ -92,21 +105,6 @@ attack (attacker, defender) hitRoll critRoll
         hitChance  = hitRate attacker defender
         critChance = critRate attacker defender
         damage     = damageDone attacker defender
-
-roundOfBattle :: (RandomGen g) => (Character, Character) -- (1st to attack, 2nd)
-    -> g
-    -> (Character, Character)
-roundOfBattle (char1, char2) gen = case whoDoubles (char1, char2) of
-    Just char -> if char ^. name == char1 ^. name
-                    -- If first character is doubling:
-                    then undefined
-                    else undefined
-    Nothing   -> let 
-                (gen', gen'')    = split gen
-                (char1', char2') = attackRNG (char1, char2) gen'
-                (char2'', char1'') = attackRNG (char1', char2') gen''
-                in
-                (char1'', char2'')
 
 battle :: (RandomGen g) => (Character, Character) -> g -> BattleResult
 battle (char1, char2) gen = case char1 ^. curHP <= 0 of
