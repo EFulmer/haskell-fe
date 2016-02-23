@@ -58,6 +58,16 @@ calcExp (attacker, defender) outcome =
         baseExp     = ((defender ^. level) * classPower) + classBonusB -
             (((attacker ^. level) * classPower) + classBonusB) -- poor name...
 
+-- TODO implement attack speed/con
+whoDoubles :: (Character, Character) -> Maybe Character
+whoDoubles (char1, char2)
+    | spd1 - spd2 >= 4 = Just char1
+    | spd2 - spd1 >= 4 = Just char2
+    | otherwise        = Nothing
+    where
+        spd1 = char1 ^. (stats . spd)
+        spd2 = char2 ^. (stats . spd)
+
 -- run one half of a turn of combat: one character attacks, the other defends
 attack :: (RandomGen g) => (Character, Character) -- (attacker, defender)
     -> g 
