@@ -40,6 +40,8 @@ data PhysWeapon = Sword | Lance | Axe | Bow deriving (Show, Eq)
 
 data MagWeapon = Light | Dark | Anima deriving (Show, Eq)
 
+data CombatOutcome = Miss | Tink | Hit | Victory deriving (Show, Eq)
+
 makeLenses ''Character
 makeLenses ''Stats
 makeLenses ''Weapon

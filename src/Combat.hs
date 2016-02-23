@@ -37,6 +37,7 @@ critRate attacker defender = case critical attacker of
 
 -- again, no weapon triangle
 -- rename "atk"?
+-- TODO: finish implementing when other character can't attack
 damageDone :: Character -> Character -> Int
 damageDone attacker defender = case dmg attacker of
     (Just atk) -> atk - (defender ^. (stats . def))
@@ -46,19 +47,22 @@ calcExp :: (Character, Character) -> CombatOutcome -> Int
 calcExp (attacker, defender) outcome = 
     case outcome of
         Miss    -> 1
+        Tink    -> 1
         Hit     -> (31 + ((defender ^. level) + classBonusA) - 
             ((attacker ^. level) + classBonusA)) `div` classPower
-        Victory -> 0 
+        Victory -> (calcExp (attacker, defender) Hit) + baseExp + 20
     where 
-        classBonusA = 0 -- TODO 
+        classBonusA = 1 -- TODO 
         classBonusB = 0 -- TODO
         classPower  = 3 -- TODO
+        baseExp     = ((defender ^. level) * classPower) + classBonusB -
+            (((attacker ^. level) * classPower) + classBonusB) -- poor name...
 
 -- run one half of a turn of combat: one character attacks, the other defends
-battleRound :: (RandomGen g) => (Character, Character) -- (attacker, defender)
+attack :: (RandomGen g) => (Character, Character) -- (attacker, defender)
     -> g 
     -> (Character, Character)
-battleRound (attacker, defender) gen = let
+attack (attacker, defender) gen = let
     [hit, crit] = take 2 $ randomRs (1, 100) gen
     attackHit   = hit <= (hitRate attacker defender)
     atk         = damageDone attacker defender
@@ -69,4 +73,11 @@ battleRound (attacker, defender) gen = let
     (attacker, newDefender)
 
 battle :: (RandomGen g) => (Character, Character) -> g -> BattleResult
-battle = undefined
+battle (char1, char2) gen = case char1 ^. curHP <= 0 of
+    True  -> BattleResult { _winner = char2, _loser = char1 }
+    False -> case char2 ^. curHP <= 0 of
+        True  -> BattleResult { _winner = char1, _loser = char2 }
+        False -> battle (newAttacker, newDefender) gen''
+    where
+        (gen', gen'') =  split gen
+        (newDefender, newAttacker) = attack (char1, char2) gen' 
