@@ -98,6 +98,16 @@ attackRNG (attacker, defender) gen = let
     in
     (attacker, newDefender)
 
+battle :: (RandomGen g) => (Character, Character) -> g -> BattleResult
+battle (char1, char2) gen = case char1 ^. curHP <= 0 of
+    True  -> BattleResult { _winner = char2, _loser = char1 }
+    False -> case char2 ^. curHP <= 0 of
+        True  -> BattleResult { _winner = char1, _loser = char2 }
+        False -> battle (newAttacker, newDefender) gen''
+    where
+        (gen', gen'') =  split gen
+        (newDefender, newAttacker) = attackRNG (char1, char2) gen' 
+
 attack :: (Character, Character) -> Int -> Int -> BattleStatus
 attack (attacker, target) hitRoll critRoll
     | hitRoll <= hitChance = if critRoll <= critChance
@@ -118,12 +128,23 @@ attack (attacker, target) hitRoll critRoll
         critChance = critRate attacker target
         damage     = damageDone attacker target
 
-battle :: (RandomGen g) => (Character, Character) -> g -> BattleResult
-battle (char1, char2) gen = case char1 ^. curHP <= 0 of
-    True  -> BattleResult { _winner = char2, _loser = char1 }
-    False -> case char2 ^. curHP <= 0 of
-        True  -> BattleResult { _winner = char1, _loser = char2 }
-        False -> battle (newAttacker, newDefender) gen''
-    where
-        (gen', gen'') =  split gen
-        (newDefender, newAttacker) = attackRNG (char1, char2) gen' 
+fightRound :: (RandomGen g) => 
+    (Character, Character) -> -- (first attacker, first target)
+    g -> 
+    IO BattleStatus -- we're printing messages for debugging
+fightRound (char1, char2) gen = case whoDoubles (char1, char2) of
+    Just someone -> if char1 ^. name == someone ^. name
+                    then undefined
+                    else undefined
+    Nothing -> do
+        -- this is sorta ugly and unsafe but I'm letting it slide because 
+        -- we're in the IO monad already.
+        let [hitRoll1, critRoll1, hitRoll2, critRoll2] = take 4 $ randomRs (1, 100) gen
+        let status1 = attack (char1, char2) hitRoll1 critRoll1
+        putStrLn $ prettyPrintStatus status1
+        if status1 ^. lastRound == Victory
+        then return status1
+        else do
+            let status2 = attack (status1 ^. lastTarget, status1 ^. lastAttacker) hitRoll2 critRoll2
+            putStrLn $ prettyPrintStatus status2
+            return status2
