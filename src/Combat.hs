@@ -43,18 +43,20 @@ damageDone attacker defender = case dmg attacker of
     (Just atk) -> atk - (defender ^. (stats . def))
     Nothing    -> 0
 
-calcExp :: (Character, Character) -> CombatOutcome -> Int
+calcExp :: (Character, Character) -> CombatResult -> Int
 calcExp (attacker, defender) outcome = 
     case outcome of
-        Miss    -> 1
-        Tink    -> 1
-        Hit     -> (31 + ((defender ^. level) + classBonusA) - 
-            ((attacker ^. level) + classBonusA)) `div` classPower
-        Victory -> (calcExp (attacker, defender) Hit) + baseExp + 20
+        Miss       -> 1
+        Hit 0      -> 1
+        Hit _      -> hitExp
+        Critical _ -> hitExp
+        Victory    -> (calcExp (attacker, defender) (Hit 1)) + baseExp + 20
     where 
         classBonusA = 1 -- TODO 
         classBonusB = 0 -- TODO
         classPower  = 3 -- TODO
+        hitExp      = (31 + ((defender ^. level) + classBonusA) - 
+            ((attacker ^. level) + classBonusA)) `div` classPower
         baseExp     = ((defender ^. level) * classPower) + classBonusB -
             (((attacker ^. level) * classPower) + classBonusB) -- poor name...
 
@@ -82,6 +84,7 @@ roundOfBattle (char1, char2) gen = case whoDoubles (char1, char2) of
                 (char2'', char1'') = attackRNG (char1', char2') gen''
                 in
                 (char1'', char2'')
+
 attackRNG :: (RandomGen g) => (Character, Character) -- (attacker, defender)
     -> g 
     -> (Character, Character) -- in the same order

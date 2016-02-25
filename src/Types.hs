@@ -34,15 +34,23 @@ data BattleResult = BattleResult
     { _winner :: Character
     , _loser :: Character } deriving Show
 
+data CombatResult = Miss | Hit Int | Critical Int | 
+    Victory deriving (Show, Eq)
+
+data BattleStatus = BattleStatus 
+    { _lastRound    :: CombatResult
+    , _lastAttacker :: Character
+    , _lastDefender :: Character } deriving Show
+
 data WeaponType = Physical PhysWeapon | Magical MagWeapon deriving (Show, Eq)
 
 data PhysWeapon = Sword | Lance | Axe | Bow deriving (Show, Eq)
 
 data MagWeapon = Light | Dark | Anima deriving (Show, Eq)
 
-data CombatOutcome = Miss | Tink | Hit | Victory deriving (Show, Eq)
-
 makeLenses ''Character
 makeLenses ''Stats
 makeLenses ''Weapon
+makeLenses ''BattleStatus
 makeLenses ''BattleResult
+
