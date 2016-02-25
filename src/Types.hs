@@ -40,7 +40,7 @@ data CombatResult = Miss | Hit Int | Critical Int |
 data BattleStatus = BattleStatus 
     { _lastRound    :: CombatResult
     , _lastAttacker :: Character
-    , _lastDefender :: Character } deriving Show
+    , _lastTarget   :: Character } deriving Show
 
 data WeaponType = Physical PhysWeapon | Magical MagWeapon deriving (Show, Eq)
 
@@ -54,3 +54,16 @@ makeLenses ''Weapon
 makeLenses ''BattleStatus
 makeLenses ''BattleResult
 
+prettyPrintStatus :: BattleStatus -> String
+prettyPrintStatus status = case status ^. lastRound of
+    Miss       -> attacker' ++ " missed " ++ target' ++ "!"
+    Hit x      -> attacker' ++ " hits " ++ target' ++ " for " ++ show x ++ 
+        " HP of damage! " ++ target' ++ " has " ++ targetHP' ++ " HP remaining."
+    Critical x -> attacker' ++ " scores a critical hit on " ++ target' ++ 
+        " for " ++ show x ++ " HP of damage!" ++ target' ++ " has " ++ 
+        targetHP' ++ " HP remaining."
+    Victory    -> attacker' ++ " wins!"
+    where
+        attacker' = status ^. lastAttacker ^. name
+        target'   = status ^. lastTarget ^. name
+        targetHP' = show $ status ^. lastTarget ^. curHP
