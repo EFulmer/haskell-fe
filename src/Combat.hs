@@ -99,24 +99,24 @@ attackRNG (attacker, defender) gen = let
     (attacker, newDefender)
 
 attack :: (Character, Character) -> Int -> Int -> BattleStatus
-attack (attacker, defender) hitRoll critRoll
+attack (attacker, target) hitRoll critRoll
     | hitRoll <= hitChance = if critRoll <= critChance
                             then BattleStatus 
                                 { _lastRound = Critical $ damage * 3
                                 , _lastAttacker = attacker
-                                , _lastTarget = curHP -~ (damage * 3) $ defender }
+                                , _lastTarget = curHP -~ (damage * 3) $ target }
                             else BattleStatus
                                 { _lastRound = Hit damage
                                 , _lastAttacker = attacker
-                                , _lastTarget = curHP -~ damage $ defender }
+                                , _lastTarget = curHP -~ damage $ target }
     | otherwise            = BattleStatus
                                 { _lastRound = Miss
                                 , _lastAttacker = attacker
-                                , _lastTarget = defender }
+                                , _lastTarget = target }
     where
-        hitChance  = hitRate attacker defender
-        critChance = critRate attacker defender
-        damage     = damageDone attacker defender
+        hitChance  = hitRate attacker target
+        critChance = critRate attacker target
+        damage     = damageDone attacker target
 
 battle :: (RandomGen g) => (Character, Character) -> g -> BattleResult
 battle (char1, char2) gen = case char1 ^. curHP <= 0 of
