@@ -35,7 +35,7 @@ data BattleResult = BattleResult
     , _loser :: Character } deriving Show
 
 data CombatResult = Miss | Hit Int | Critical Int | 
-    Victory Int deriving (Show, Eq)
+    Victory Int | CritVictory Int deriving (Show, Eq)
 
 data BattleStatus = BattleStatus 
     { _lastRound    :: CombatResult

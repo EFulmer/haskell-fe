@@ -77,10 +77,9 @@ attack :: (Character, Character) -> Int -> Int -> BattleStatus
 attack (attacker, target) hitRoll critRoll
     | hitRoll <= hitChance = if critRoll <= critChance
                             -- TODO refactor into victoryCheck fn
-                            -- other TODO: add special message for CritVictory
                             then BattleStatus 
                                 { _lastRound = if critDamage >= target ^. curHP
-                                    then Victory critDamage 
+                                    then CritVictory critDamage 
                                     else Critical critDamage
                                 , _lastAttacker = attacker
                                 , _lastTarget = curHP -~ (damage * 3) $ target }
@@ -113,15 +112,17 @@ fightRound (char1, char2) gen = case whoDoubles (char1, char2) of
             let status1 = attack (char1, char2) hitRoll1 critRoll1
             putStrLn $ prettyPrintStatus status1
             case status1 ^. lastRound of
-                Victory _ -> return status1
-                _         -> do
+                CritVictory _ -> return status1
+                Victory     _ -> return status1
+                _             -> do
                     let char1' = status1 ^. lastAttacker
                     let char2' = status1 ^. lastTarget
                     let status2 = attack (char2', char1') hitRoll2 critRoll2
                     putStrLn $ prettyPrintStatus status2
                     case status2 ^. lastRound of
-                        Victory _ -> return status2
-                        _         -> do
+                        CritVictory _ -> return status2
+                        Victory _     -> return status2
+                        _             -> do
                             let char1'' = status2 ^. lastTarget
                             let char2'' = status2 ^. lastAttacker
                             let status3 = attack (char1, char2) hitRoll3 critRoll3
@@ -132,15 +133,17 @@ fightRound (char1, char2) gen = case whoDoubles (char1, char2) of
             let status1 = attack (char1, char2) hitRoll1 critRoll1
             putStrLn $ prettyPrintStatus status1
             case status1 ^. lastRound of
-                Victory _ -> return status1
-                _         -> do
+                CritVictory _ -> return status1
+                Victory _     -> return status1
+                _             -> do
                     let char1' = status1 ^. lastAttacker
                     let char2' = status1 ^. lastTarget
                     let status2 = attack (char2', char1') hitRoll2 critRoll2
                     putStrLn $ prettyPrintStatus status2
                     case status2 ^. lastRound of 
-                        Victory _ -> return status2
-                        _         -> do
+                        CritVictory _ -> return status2
+                        Victory _     -> return status2
+                        _             -> do
                             let char1'' = status2 ^. lastTarget
                             let char2'' = status2 ^. lastAttacker
                             let status3 = attack (char2'', char1'') hitRoll3 critRoll3
@@ -151,22 +154,24 @@ fightRound (char1, char2) gen = case whoDoubles (char1, char2) of
         let status1 = attack (char1, char2) hitRoll1 critRoll1
         putStrLn $ prettyPrintStatus status1
         case status1 ^. lastRound of
-            Victory _ -> return status1
-            _         -> do
+            CritVictory _ -> return status1
+            Victory _     -> return status1
+            _             -> do
                 let status2 = attack (status1 ^. lastTarget, status1 ^. lastAttacker) hitRoll2 critRoll2
                 putStrLn $ prettyPrintStatus status2
                 return status2
 
-fightLoop :: (RandomGen g) => IO BattleStatus -> g -> IO BattleStatus
-fightLoop status gen = do
+fightLoop :: (RandomGen g) => IO BattleStatus -> g -> Int -> IO BattleStatus
+fightLoop status gen x = do
     status' <- status
     case status' ^. lastRound of 
-        Victory _ -> status
-        _         -> do
-            putStrLn "New round!" -- TODO put in accumulator that counts the rounds.
+        CritVictory _ -> status
+        Victory _     -> status
+        _             -> do
+            putStrLn $ "Round " ++ show x ++ ":"
             status'' <- fightRound (status' ^. lastAttacker, status' ^. lastTarget) gen
             gen' <- newStdGen
-            fightLoop (return status'') gen'
+            fightLoop (return status'') gen' (succ x)
 
 fight :: (Character, Character) -> IO BattleStatus
 fight (char1, char2) = do
@@ -177,7 +182,8 @@ fight (char1, char2) = do
     then putStrLn $ char1 ^. name ++ " attacks first!"
     else putStrLn $ char2 ^. name ++ " attacks first!"
     -- TODO refactor, don't do first round of combat in fight fn.
+    -- TODO FIX FIGHT ORDER!!
     status <- fightRound (char1, char2) gen' 
     gen'' <- newStdGen
-    fightLoop (return status) gen''
+    fightLoop (return status) gen'' 1
 
