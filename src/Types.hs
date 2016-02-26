@@ -35,7 +35,7 @@ data BattleResult = BattleResult
     , _loser :: Character } deriving Show
 
 data CombatResult = Miss | Hit Int | Critical Int | 
-    Victory deriving (Show, Eq)
+    Victory Int deriving (Show, Eq)
 
 data BattleStatus = BattleStatus 
     { _lastRound    :: CombatResult
@@ -62,7 +62,8 @@ prettyPrintStatus status = case status ^. lastRound of
     Critical x -> attacker' ++ " scores a critical hit on " ++ target' ++ 
         " for " ++ show x ++ " HP of damage!" ++ target' ++ " has " ++ 
         targetHP' ++ " HP remaining."
-    Victory    -> attacker' ++ " wins!"
+    Victory x  -> attacker' ++ " hits for " ++ show x ++ 
+        "damage, winning the fight!"
     where
         attacker' = status ^. lastAttacker ^. name
         target'   = status ^. lastTarget ^. name

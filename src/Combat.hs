@@ -50,7 +50,7 @@ calcExp (attacker, defender) outcome =
         Hit 0      -> 1
         Hit _      -> hitExp
         Critical _ -> hitExp
-        Victory    -> (calcExp (attacker, defender) (Hit 1)) + baseExp + 20
+        Victory  _ -> (calcExp (attacker, defender) (Hit 1)) + baseExp + 20
     where 
         classBonusA = 1 -- TODO 
         classBonusB = 0 -- TODO
@@ -142,9 +142,32 @@ fightRound (char1, char2) gen = case whoDoubles (char1, char2) of
         let [hitRoll1, critRoll1, hitRoll2, critRoll2] = take 4 $ randomRs (1, 100) gen
         let status1 = attack (char1, char2) hitRoll1 critRoll1
         putStrLn $ prettyPrintStatus status1
-        if status1 ^. lastRound == Victory
-        then return status1
-        else do
-            let status2 = attack (status1 ^. lastTarget, status1 ^. lastAttacker) hitRoll2 critRoll2
-            putStrLn $ prettyPrintStatus status2
-            return status2
+        case status1 ^. lastRound of
+            Victory _ -> return status1
+            _         -> do
+                let status2 = attack (status1 ^. lastTarget, status1 ^. lastAttacker) hitRoll2 critRoll2
+                putStrLn $ prettyPrintStatus status2
+                return status2
+        -- if status1 ^. lastRound == Victory
+        -- then return status1
+        -- else do
+        --     let status2 = attack (status1 ^. lastTarget, status1 ^. lastAttacker) hitRoll2 critRoll2
+        --     putStrLn $ prettyPrintStatus status2
+        --     return status2
+
+fight :: (Character, Character) -> IO BattleStatus
+fight (char1, char2) = do
+    gen <- getStdGen
+    let (char1AtkFirst, _) = random gen :: (Bool, StdGen)
+    gen' <- newStdGen
+    if char1AtkFirst
+    then do
+        putStrLn $ char1 ^. name ++ " attacks first!"
+        status <- fightRound (char1, char2) gen'
+        return undefined
+    else do
+        putStrLn $ char2 ^. name ++ " attacks first!"
+        status <- fightRound (char2, char1) gen'
+        return undefined
+    return undefined
+
