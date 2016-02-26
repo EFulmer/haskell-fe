@@ -29,36 +29,36 @@ accuracy char = (char ^. (stats . skl) * 2) +
 
 -- No weapon triangle yet
 hitRate :: Character -> Character -> Int
-hitRate attacker defender = max (accuracy attacker - avoid defender) 0
+hitRate attacker target = max (accuracy attacker - avoid target) 0
 
 critRate :: Character -> Character -> Int
-critRate attacker defender = case critical attacker of
-    (Just crt) -> max 0 $ crt - (critAvoid defender)
+critRate attacker target = case critical target of
+    (Just crt) -> max 0 $ crt - (critAvoid target)
     Nothing    -> 0
 
 -- again, no weapon triangle
 -- rename "atk"?
 -- TODO: finish implementing when other character can't attack
 damageDone :: Character -> Character -> Int
-damageDone attacker defender = case dmg attacker of
-    (Just atk) -> atk - (defender ^. (stats . def))
+damageDone attacker target = case dmg attacker of
+    (Just atk) -> atk - (target ^. (stats . def))
     Nothing    -> 0
 
 calcExp :: (Character, Character) -> CombatResult -> Int
-calcExp (attacker, defender) outcome = 
+calcExp (attacker, target) outcome = 
     case outcome of
         Miss       -> 1
         Hit 0      -> 1
         Hit _      -> hitExp
         Critical _ -> hitExp
-        Victory  _ -> (calcExp (attacker, defender) (Hit 1)) + baseExp + 20
+        Victory  _ -> (calcExp (attacker, target) (Hit 1)) + baseExp + 20
     where 
         classBonusA = 1 -- TODO 
         classBonusB = 0 -- TODO
         classPower  = 3 -- TODO
-        hitExp      = (31 + ((defender ^. level) + classBonusA) - 
+        hitExp      = (31 + ((target ^. level) + classBonusA) - 
             ((attacker ^. level) + classBonusA)) `div` classPower
-        baseExp     = ((defender ^. level) * classPower) + classBonusB -
+        baseExp     = ((target ^. level) * classPower) + classBonusB -
             (((attacker ^. level) * classPower) + classBonusB) -- poor name...
 
 -- TODO implement attack speed/con
@@ -89,13 +89,13 @@ roundOfBattle (char1, char2) gen = case whoDoubles (char1, char2) of
 attackRNG :: (RandomGen g) => (Character, Character) -- (attacker, defender)
     -> g 
     -> (Character, Character) -- in the same order
-attackRNG (attacker, defender) gen = let
+attackRNG (attacker, target) gen = let
     [hit, crit] = take 2 $ randomRs (1, 100) gen
-    attackHit   = hit <= (hitRate attacker defender)
-    atk         = damageDone attacker defender
-    critHit     = attackHit && (crit <= critRate attacker defender)
+    attackHit   = hit <= (hitRate attacker target)
+    atk         = damageDone attacker target
+    critHit     = attackHit && (crit <= critRate attacker target)
     dmgDone     = (fromEnum attackHit) * atk * (succ (fromEnum critHit)) * 3
-    newDefender = curHP -~ dmgDone $ defender
+    newDefender = curHP -~ dmgDone $ target
     in
     (attacker, newDefender)
 
