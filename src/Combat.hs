@@ -2,6 +2,7 @@ module Combat where
 import Control.Lens
 import System.Random
 import Examples
+import Misc
 import Types
 
 avoid :: Character -> Int
@@ -133,12 +134,48 @@ fightRound :: (RandomGen g) =>
     g -> 
     IO BattleStatus -- we're printing messages for debugging
 fightRound (char1, char2) gen = case whoDoubles (char1, char2) of
-    Just someone -> if char1 ^. name == someone ^. name
-                    then undefined
-                    else undefined
+    Just someone -> do
+        let [hitRoll1, critRoll1, hitRoll2, critRoll2, hitRoll3, critRoll3] = take 6 $ randomRs (1, 100) gen
+        if char1 ^. name == someone ^. name
+        then do
+            putStrLn $ char1 ^. name ++ " is fast enough to double attack!"
+            let status1 = attack (char1, char2) hitRoll1 critRoll1
+            putStrLn $ prettyPrintStatus status1
+            case status1 ^. lastRound of
+                Victory _ -> return status1
+                _         -> do
+                    let char1' = status1 ^. lastAttacker
+                    let char2' = status1 ^. lastTarget
+                    let status2 = attack (char2', char1') hitRoll2 critRoll2
+                    putStrLn $ prettyPrintStatus status2
+                    case status2 ^. lastRound of
+                        Victory _ -> return status2
+                        _         -> do
+                            let char1'' = status2 ^. lastTarget
+                            let char2'' = status2 ^. lastAttacker
+                            let status3 = attack (char1, char2) hitRoll3 critRoll3
+                            putStrLn $ prettyPrintStatus status3
+                            return status3
+        else do
+            putStrLn $ char2 ^. name ++ " is fast enough to double attack!"
+            let status1 = attack (char1, char2) hitRoll1 critRoll1
+            putStrLn $ prettyPrintStatus status1
+            case status1 ^. lastRound of
+                Victory _ -> return status1
+                _         -> do
+                    let char1' = status1 ^. lastAttacker
+                    let char2' = status1 ^. lastTarget
+                    let status2 = attack (char2', char1') hitRoll2 critRoll2
+                    putStrLn $ prettyPrintStatus status2
+                    case status2 ^. lastRound of 
+                        Victory _ -> return status2
+                        _         -> do
+                            let char1'' = status2 ^. lastTarget
+                            let char2'' = status2 ^. lastAttacker
+                            let status3 = attack (char2'', char1'') hitRoll3 critRoll3
+                            putStrLn $ prettyPrintStatus status3
+                            return status3
     Nothing -> do
-        -- this is sorta ugly and unsafe but I'm letting it slide because 
-        -- we're in the IO monad already.
         let [hitRoll1, critRoll1, hitRoll2, critRoll2] = take 4 $ randomRs (1, 100) gen
         let status1 = attack (char1, char2) hitRoll1 critRoll1
         putStrLn $ prettyPrintStatus status1
@@ -148,12 +185,6 @@ fightRound (char1, char2) gen = case whoDoubles (char1, char2) of
                 let status2 = attack (status1 ^. lastTarget, status1 ^. lastAttacker) hitRoll2 critRoll2
                 putStrLn $ prettyPrintStatus status2
                 return status2
-        -- if status1 ^. lastRound == Victory
-        -- then return status1
-        -- else do
-        --     let status2 = attack (status1 ^. lastTarget, status1 ^. lastAttacker) hitRoll2 critRoll2
-        --     putStrLn $ prettyPrintStatus status2
-        --     return status2
 
 fight :: (Character, Character) -> IO BattleStatus
 fight (char1, char2) = do
