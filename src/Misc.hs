@@ -16,7 +16,7 @@ prettyPrintStatus status = case status ^. lastRound of
         " for " ++ show x ++ " HP of damage! " ++ target' ++ " has " ++ 
         targetHP' ++ " HP remaining."
     Victory x  -> attacker' ++ " hits for " ++ show x ++ 
-        "damage, winning the fight!"
+        " damage, winning the fight!"
     where
         attacker' = status ^. lastAttacker ^. name
         target'   = status ^. lastTarget ^. name

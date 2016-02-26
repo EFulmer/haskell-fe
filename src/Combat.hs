@@ -1,6 +1,5 @@
 module Combat where
 import Control.Lens
-import Control.Monad.Loops
 import System.Random
 import Examples
 import Misc
@@ -77,12 +76,18 @@ whoDoubles (char1, char2)
 attack :: (Character, Character) -> Int -> Int -> BattleStatus
 attack (attacker, target) hitRoll critRoll
     | hitRoll <= hitChance = if critRoll <= critChance
+                            -- TODO refactor into victoryCheck fn
+                            -- other TODO: add special message for CritVictory
                             then BattleStatus 
-                                { _lastRound = Critical $ damage * 3
+                                { _lastRound = if critDamage >= target ^. curHP
+                                    then Victory critDamage 
+                                    else Critical critDamage
                                 , _lastAttacker = attacker
                                 , _lastTarget = curHP -~ (damage * 3) $ target }
                             else BattleStatus
-                                { _lastRound = Hit damage
+                                { _lastRound = if damage >= target ^. curHP
+                                    then Victory damage 
+                                    else Hit damage
                                 , _lastAttacker = attacker
                                 , _lastTarget = curHP -~ damage $ target }
     | otherwise            = BattleStatus
@@ -93,6 +98,7 @@ attack (attacker, target) hitRoll critRoll
         hitChance  = hitRate attacker target
         critChance = critRate attacker target
         damage     = damageDone attacker target
+        critDamage = 3 * (damageDone attacker target)
 
 fightRound :: (RandomGen g) => 
     (Character, Character) -> -- (first attacker, first target)
@@ -151,6 +157,17 @@ fightRound (char1, char2) gen = case whoDoubles (char1, char2) of
                 putStrLn $ prettyPrintStatus status2
                 return status2
 
+fightLoop :: (RandomGen g) => IO BattleStatus -> g -> IO BattleStatus
+fightLoop status gen = do
+    status' <- status
+    case status' ^. lastRound of 
+        Victory _ -> status
+        _         -> do
+            putStrLn "New round!" -- TODO put in accumulator that counts the rounds.
+            status'' <- fightRound (status' ^. lastAttacker, status' ^. lastTarget) gen
+            gen' <- newStdGen
+            fightLoop (return status'') gen'
+
 fight :: (Character, Character) -> IO BattleStatus
 fight (char1, char2) = do
     gen <- getStdGen
@@ -159,7 +176,8 @@ fight (char1, char2) = do
     if char1AtkFirst
     then putStrLn $ char1 ^. name ++ " attacks first!"
     else putStrLn $ char2 ^. name ++ " attacks first!"
-    status <- fightRound (char1, char2) gen'
-    until (
-    return undefined
+    -- TODO refactor, don't do first round of combat in fight fn.
+    status <- fightRound (char1, char2) gen' 
+    gen'' <- newStdGen
+    fightLoop (return status) gen''
 
