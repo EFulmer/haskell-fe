@@ -1,5 +1,6 @@
 module Combat where
 import Control.Lens
+import Control.Monad.Loops
 import System.Random
 import Examples
 import Misc
@@ -14,6 +15,7 @@ dmg char = if length (char ^. items) > 0
     then Just $ char ^. (stats . pow) + (char ^. items) !! 0 ^. mt
     else Nothing
 
+-- as above
 critical :: Character -> Maybe Int
 critical char = if length (char ^. items) > 0
     then Just $ (char ^. (stats . skl) `div` 2) + (char ^. items) !! 0 ^. crit
@@ -31,6 +33,8 @@ accuracy char = (char ^. (stats . skl) * 2) +
 hitRate :: Character -> Character -> Int
 hitRate attacker target = max (accuracy attacker - avoid target) 0
 
+-- in the future we'll have the Nothing propagate through and just skip 
+-- the attack of a character who can't.
 critRate :: Character -> Character -> Int
 critRate attacker target = case critical target of
     (Just crt) -> max 0 $ crt - (critAvoid target)
@@ -38,7 +42,6 @@ critRate attacker target = case critical target of
 
 -- again, no weapon triangle
 -- rename "atk"?
--- TODO: finish implementing when other character can't attack
 damageDone :: Character -> Character -> Int
 damageDone attacker target = case dmg attacker of
     (Just atk) -> atk - (target ^. (stats . def))
@@ -70,44 +73,6 @@ whoDoubles (char1, char2)
     where
         spd1 = char1 ^. (stats . spd)
         spd2 = char2 ^. (stats . spd)
-
-roundOfBattle :: (RandomGen g) => (Character, Character) -- (1st to attack, 2nd)
-    -> g
-    -> (Character, Character)
-roundOfBattle (char1, char2) gen = case whoDoubles (char1, char2) of
-    Just char -> if char ^. name == char1 ^. name
-                    -- If first character is doubling:
-                    then undefined
-                    else undefined
-    Nothing   -> let 
-                (gen', gen'')    = split gen
-                (char1', char2') = attackRNG (char1, char2) gen'
-                (char2'', char1'') = attackRNG (char1', char2') gen''
-                in
-                (char1'', char2'')
-
-attackRNG :: (RandomGen g) => (Character, Character) -- (attacker, defender)
-    -> g 
-    -> (Character, Character) -- in the same order
-attackRNG (attacker, target) gen = let
-    [hit, crit] = take 2 $ randomRs (1, 100) gen
-    attackHit   = hit <= (hitRate attacker target)
-    atk         = damageDone attacker target
-    critHit     = attackHit && (crit <= critRate attacker target)
-    dmgDone     = (fromEnum attackHit) * atk * (succ (fromEnum critHit)) * 3
-    newDefender = curHP -~ dmgDone $ target
-    in
-    (attacker, newDefender)
-
-battle :: (RandomGen g) => (Character, Character) -> g -> BattleResult
-battle (char1, char2) gen = case char1 ^. curHP <= 0 of
-    True  -> BattleResult { _winner = char2, _loser = char1 }
-    False -> case char2 ^. curHP <= 0 of
-        True  -> BattleResult { _winner = char1, _loser = char2 }
-        False -> battle (newAttacker, newDefender) gen''
-    where
-        (gen', gen'') =  split gen
-        (newDefender, newAttacker) = attackRNG (char1, char2) gen' 
 
 attack :: (Character, Character) -> Int -> Int -> BattleStatus
 attack (attacker, target) hitRoll critRoll
@@ -192,13 +157,9 @@ fight (char1, char2) = do
     let (char1AtkFirst, _) = random gen :: (Bool, StdGen)
     gen' <- newStdGen
     if char1AtkFirst
-    then do
-        putStrLn $ char1 ^. name ++ " attacks first!"
-        status <- fightRound (char1, char2) gen'
-        return undefined
-    else do
-        putStrLn $ char2 ^. name ++ " attacks first!"
-        status <- fightRound (char2, char1) gen'
-        return undefined
+    then putStrLn $ char1 ^. name ++ " attacks first!"
+    else putStrLn $ char2 ^. name ++ " attacks first!"
+    status <- fightRound (char1, char2) gen'
+    until (
     return undefined
 
