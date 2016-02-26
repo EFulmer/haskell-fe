@@ -173,17 +173,23 @@ fightLoop status gen x = do
             gen' <- newStdGen
             fightLoop (return status'') gen' (succ x)
 
+startFight :: (RandomGen g) => (Character, Character) -> g -> IO BattleStatus
+startFight (firstAttacker, firstTarget) gen = fightLoop (
+    return BattleStatus 
+        { _lastRound = Start
+        , _lastAttacker = firstAttacker
+        , _lastTarget = firstTarget }) gen 1
+
 fight :: (Character, Character) -> IO BattleStatus
 fight (char1, char2) = do
     gen <- getStdGen
     let (char1AtkFirst, _) = random gen :: (Bool, StdGen)
     gen' <- newStdGen
     if char1AtkFirst
-    then putStrLn $ char1 ^. name ++ " attacks first!"
-    else putStrLn $ char2 ^. name ++ " attacks first!"
-    -- TODO refactor, don't do first round of combat in fight fn.
-    -- TODO FIX FIGHT ORDER!!
-    status <- fightRound (char1, char2) gen' 
-    gen'' <- newStdGen
-    fightLoop (return status) gen'' 1
+    then do
+        putStrLn $ char1 ^. name ++ " attacks first!"
+        startFight (char1, char2) gen'
+    else do
+        putStrLn $ char2 ^. name ++ " attacks first!"
+        startFight (char2, char1) gen'
 

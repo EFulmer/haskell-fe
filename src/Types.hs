@@ -34,7 +34,7 @@ data BattleResult = BattleResult
     { _winner :: Character
     , _loser :: Character } deriving Show
 
-data CombatResult = Miss | Hit Int | Critical Int | 
+data CombatResult = Start | Miss | Hit Int | Critical Int | 
     Victory Int | CritVictory Int deriving (Show, Eq)
 
 data BattleStatus = BattleStatus 
