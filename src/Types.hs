@@ -28,6 +28,7 @@ data Weapon = Weapon
     , _mt :: Int
     , _hit :: Int
     , _crit :: Int
+    , _wt :: Int
     , _rng :: (Int, Int) -- (minRange, maxRange) 
     , _rank :: WpnRank } deriving Show
 

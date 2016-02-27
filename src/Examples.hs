@@ -4,12 +4,13 @@ import Types
 rapier = Weapon 
     { _wpName = "Rapier"
     , _kind   = Physical Sword
-    , _uses   = 40
+    , _rank   = Prf
     , _mt     = 7
     , _hit    = 95
     , _crit   = 10
+    , _wt     = 5
     , _rng    = (1, 1)
-    , _rank   = Prf }
+    , _uses   = 40 }
 
 maniKatti = Weapon 
     { _wpName = "Mani Katti"
@@ -18,6 +19,7 @@ maniKatti = Weapon
     , _mt     = 8
     , _hit    = 80
     , _crit   = 20
+    , _wt     = 3
     , _rng    = (1, 1) 
     , _rank   = Prf }
 
@@ -28,6 +30,7 @@ wolfBeil = Weapon
     , _mt     = 10
     , _hit    = 75
     , _crit   = 5
+    , _wt     = 10
     , _rng    = (1, 1)
     , _rank   = Prf }
 
