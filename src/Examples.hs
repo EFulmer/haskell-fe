@@ -8,7 +8,8 @@ rapier = Weapon
     , _mt     = 7
     , _hit    = 95
     , _crit   = 10
-    , _rng    = (1, 1) }
+    , _rng    = (1, 1)
+    , _rank   = Prf }
 
 maniKatti = Weapon 
     { _wpName = "Mani Katti"
@@ -17,7 +18,8 @@ maniKatti = Weapon
     , _mt     = 8
     , _hit    = 80
     , _crit   = 20
-    , _rng    = (1, 1) }
+    , _rng    = (1, 1) 
+    , _rank   = Prf }
 
 wolfBeil = Weapon 
     { _wpName = "Wolf Beil"
@@ -26,7 +28,8 @@ wolfBeil = Weapon
     , _mt     = 10
     , _hit    = 75
     , _crit   = 5
-    , _rng    = (1, 1) }
+    , _rng    = (1, 1)
+    , _rank   = Prf }
 
 eliwood = Character 
     { _name  = "Eliwood"

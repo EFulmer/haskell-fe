@@ -28,7 +28,8 @@ data Weapon = Weapon
     , _mt :: Int
     , _hit :: Int
     , _crit :: Int
-    , _rng :: (Int, Int) } deriving Show -- range = (min, max)
+    , _rng :: (Int, Int) -- (minRange, maxRange) 
+    , _rank :: WpnRank } deriving Show
 
 data BattleResult = BattleResult 
     { _winner :: Character
@@ -47,6 +48,8 @@ data WeaponType = Physical PhysWeapon | Magical MagWeapon deriving (Show, Eq)
 data PhysWeapon = Sword | Lance | Axe | Bow deriving (Show, Eq)
 
 data MagWeapon = Light | Dark | Anima deriving (Show, Eq)
+
+data WpnRank = E | D | C | B | A | S | Prf deriving (Show)
 
 makeLenses ''Character
 makeLenses ''Stats
