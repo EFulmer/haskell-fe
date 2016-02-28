@@ -1,15 +1,17 @@
 module Scrape where
+import Data.List.Split
+import Data.Maybe (catMaybes)
 import System.Environment
 import Text.HTML.Scalpel
 import Text.Read
 import Types
 
-main :: IO ()
-main = getArgs >>= handleArgs'
+rootURL = "http://serenesforest.net/blazing-sword/inventory/"
 
-handleArgs' :: [String] -> IO ()
-handleArgs' [url] = printWeapons url
-handleArgs' _     = putStrLn "usage: list-all-images URL"
+weaponPages = ["swords/", "lances/", "axes/", "bows/", 
+    "anima-tomes/", "dark-tomes/", "light-tomes/"]
+
+weaponURLs = fmap (rootURL++) weaponPages
 
 printWeapons :: URL -> IO ()
 printWeapons url = do
@@ -18,12 +20,17 @@ printWeapons url = do
         Just strs -> mapM_ putStrLn strs
         Nothing   -> putStrLn "errored"
 
-foo :: URL -> IO ()
+nextToLast = last . init
+
+urlsWithNames :: [(String, String)]
+urlsWithNames = zip (map (nextToLast . splitOn "/") weaponURLs) weaponURLs
+
+foo :: URL -> IO [Weapon]
 foo url = do
     images <- scrapeURL url (texts ("tr" // "td"))
     case images of 
-        Just strs -> mapM_ putStrLn strs
-        Nothing   -> putStrLn "errored"
+        Just strs -> return $ catMaybes $ parseWpns strs
+        Nothing   -> return $ []
 
 parseWpns :: [String] -> [Maybe Weapon]
 parseWpns (s:ss) = if s == ""
@@ -60,3 +67,10 @@ parseRange [r1, '~', r2] = do
     r1' <- readMaybe [r1] :: Maybe Int
     r2' <- readMaybe [r2] :: Maybe Int
     return (r1', r2') 
+
+main :: IO ()
+main = getArgs >>= handleArgs'
+
+handleArgs' :: [String] -> IO ()
+handleArgs' [url] = printWeapons url
+handleArgs' _     = putStrLn "usage: list-all-images URL"
