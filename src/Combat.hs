@@ -20,8 +20,8 @@ critical char = if length (char ^. items) > 0
     then Just $ (char ^. (stats . skl) `div` 2) + (char ^. items) !! 0 ^. crit
     else Nothing
 
-critAvoid :: Character -> Int
-critAvoid char = char ^. (stats . lck)
+critAvo :: Character -> Int
+critAvo char = char ^. (stats . lck)
 
 accuracy :: Character -> Int
 accuracy char = (char ^. (stats . skl) * 2) + 
@@ -36,7 +36,7 @@ hitRate attacker target = max (accuracy attacker - avoid target) 0
 -- the attack of a character who can't.
 critRate :: Character -> Character -> Int
 critRate attacker target = case critical target of
-    (Just crt) -> max 0 $ crt - (critAvoid target)
+    (Just crt) -> max 0 $ crt - (critAvo target)
     Nothing    -> 0
 
 -- again, no weapon triangle
@@ -73,18 +73,20 @@ whoDoubles (char1, char2)
         spd1 = char1 ^. (stats . spd)
         spd2 = char2 ^. (stats . spd)
 
+survived :: Character -> Int -> Bool
+survived c dmg = dmg < c ^. curHP
+
 attack :: (Character, Character) -> Int -> Int -> BattleStatus
 attack (attacker, target) hitRoll critRoll
     | hitRoll <= hitChance = if critRoll <= critChance
-                            -- TODO refactor into victoryCheck fn
                             then BattleStatus 
-                                { _lastRound = if critDamage >= target ^. curHP
+                                { _lastRound = if target `survived` critDamage
                                     then CritVictory critDamage 
                                     else Critical critDamage
                                 , _lastAttacker = attacker
                                 , _lastTarget = curHP -~ (damage * 3) $ target }
                             else BattleStatus
-                                { _lastRound = if damage >= target ^. curHP
+                                { _lastRound = if target `survived` damage
                                     then Victory damage 
                                     else Hit damage
                                 , _lastAttacker = attacker
@@ -174,11 +176,13 @@ fightLoop status gen x = do
             fightLoop (return status'') gen' (succ x)
 
 startFight :: (RandomGen g) => (Character, Character) -> g -> IO BattleStatus
-startFight (firstAttacker, firstTarget) gen = fightLoop (
-    return BattleStatus 
-        { _lastRound = Start
-        , _lastAttacker = firstAttacker
-        , _lastTarget = firstTarget }) gen 1
+startFight (attacker, target) gen = fightLoop (return $ initBattleStatus (attacker, target)) gen 1
+
+initBattleStatus :: (Character, Character) -> BattleStatus
+initBattleStatus (attacker, target) = BattleStatus
+    { _lastRound = Start
+    , _lastAttacker = attacker
+    , _lastTarget = target }
 
 fight :: (Character, Character) -> IO BattleStatus
 fight (char1, char2) = do
