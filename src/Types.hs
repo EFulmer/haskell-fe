@@ -1,6 +1,8 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE DeriveGeneric, TemplateHaskell #-}
 module Types where
 import Control.Lens
+import Data.Aeson
+import GHC.Generics
 
 data Character = Character 
     { _name    :: String
@@ -30,7 +32,7 @@ data Weapon = Weapon
     , _crit   :: Int
     , _wt     :: Int
     , _rng    :: (Int, Int) -- (minRange, maxRange) 
-    , _rank   :: WpnRank } deriving Show
+    , _rank   :: WpnRank } deriving (Generic, Show)
 
 data BattleResult = BattleResult 
     { _winner :: Character
@@ -44,13 +46,25 @@ data BattleStatus = BattleStatus
     , _lastAttacker :: Character
     , _lastTarget   :: Character } deriving Show
 
-data WeaponType = Physical PhysWeapon | Magical MagWeapon deriving (Eq, Show)
+data WeaponType = Physical PhysWeapon 
+                | Magical MagWeapon deriving (Eq, Generic, Show)
 
-data PhysWeapon = Sword | Lance | Axe | Bow deriving (Eq, Read, Show)
+data PhysWeapon = Sword | Lance | Axe | Bow deriving (Eq, Generic, Read, Show)
 
-data MagWeapon = Light | Dark | Anima deriving (Eq, Read, Show)
+data MagWeapon = Light | Dark | Anima deriving (Eq, Generic, Read, Show)
 
-data WpnRank = E | D | C | B | A | S | Prf deriving (Eq, Read, Show)
+data WpnRank = E | D | C | B | A | S | Prf deriving (Eq, Generic, Read, Show)
+
+instance FromJSON Weapon
+instance ToJSON Weapon
+instance FromJSON WpnRank
+instance ToJSON WpnRank
+instance FromJSON WeaponType
+instance ToJSON WeaponType
+instance FromJSON PhysWeapon
+instance ToJSON PhysWeapon
+instance FromJSON MagWeapon
+instance ToJSON MagWeapon
 
 makeLenses ''Character
 makeLenses ''Stats
