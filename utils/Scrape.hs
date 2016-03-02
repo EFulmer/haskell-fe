@@ -30,9 +30,10 @@ parseRange :: String -> Maybe (Int, Int)
 parseRange [c] = do
     c' <- readMaybe [c] :: Maybe Int
     return (c', c')
-parseRange [r1, '~', r2] = do
+-- parseRange [r1, '~', r2] = do
+parseRange (r1:_:r2) = do
     r1' <- readMaybe [r1] :: Maybe Int
-    r2' <- readMaybe [r2] :: Maybe Int
+    r2' <- readMaybe r2 :: Maybe Int
     return (r1', r2') 
 
 parseWpn :: WeaponType -> [String] -> Maybe Weapon
@@ -77,7 +78,8 @@ parseWpnsFromPage (wpnType, url) = do
 wpnPageToJSON :: (WeaponType, URL) -> IO ()
 wpnPageToJSON wu = do
     wpns <- parseWpnsFromPage wu
-    writeWeaponsToFile wpns $ (last . init) $ splitOn "/" $ snd wu
+    let fName = (last . init) $ splitOn "/" $ snd wu
+    writeWeaponsToFile wpns $ "data/weapons/" ++ fName ++ ".json"
 
 allWpnsToJSON :: [(WeaponType, URL)] -> IO ()
 allWpnsToJSON = mapM_ wpnPageToJSON
