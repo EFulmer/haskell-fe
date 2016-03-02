@@ -1,5 +1,6 @@
 module Scrape where
 import Data.Aeson
+import Data.Aeson.Encode.Pretty
 import qualified Data.ByteString.Lazy as B
 import Data.List.Split
 import Data.Maybe (catMaybes)
@@ -64,7 +65,7 @@ parseWpns _ _       = []
 writeWeaponsToFile :: [Weapon] -> IO ()
 writeWeaponsToFile wpns = mapM_ (B.appendFile "data/weapons.json") jsonWpns
     where
-       jsonWpns = map encode wpns 
+       jsonWpns = map encodePretty wpns 
 
 parseWpnsFromPage :: (WeaponType, URL) -> IO [Weapon]
 parseWpnsFromPage (wpnType, url) = do
@@ -73,10 +74,13 @@ parseWpnsFromPage (wpnType, url) = do
         Just strs -> return $ catMaybes $ parseWpns wpnType strs
         Nothing   -> return $ []
 
-wpnsToJSON :: (WeaponType, URL) -> IO ()
-wpnsToJSON wu = do
+wpnPageToJSON :: (WeaponType, URL) -> IO ()
+wpnPageToJSON wu = do
     wpns <- parseWpnsFromPage wu
     writeWeaponsToFile wpns
+
+allWpnsToJSON :: [(WeaponType, URL)] -> IO ()
+allWpnsToJSON ws = undefined
 
 main :: IO ()
 main = do
