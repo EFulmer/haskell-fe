@@ -80,7 +80,7 @@ wpnPageToJSON wu = do
     writeWeaponsToFile wpns
 
 allWpnsToJSON :: [(WeaponType, URL)] -> IO ()
-allWpnsToJSON ws = undefined
+allWpnsToJSON = mapM_ wpnPageToJSON
 
 main :: IO ()
 main = do
