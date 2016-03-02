@@ -62,10 +62,10 @@ parseWpns wt (s:ss) = if s == ""
                     else parseWpns wt ss
 parseWpns _ _       = []
 
-writeWeaponsToFile :: [Weapon] -> IO ()
-writeWeaponsToFile wpns = mapM_ (B.appendFile "data/weapons.json") jsonWpns
+writeWeaponsToFile :: [Weapon] -> FilePath -> IO ()
+writeWeaponsToFile ws f = mapM_ (B.appendFile f) jsonWs
     where
-       jsonWpns = map encodePretty wpns 
+       jsonWs= map encodePretty ws
 
 parseWpnsFromPage :: (WeaponType, URL) -> IO [Weapon]
 parseWpnsFromPage (wpnType, url) = do
@@ -77,12 +77,10 @@ parseWpnsFromPage (wpnType, url) = do
 wpnPageToJSON :: (WeaponType, URL) -> IO ()
 wpnPageToJSON wu = do
     wpns <- parseWpnsFromPage wu
-    writeWeaponsToFile wpns
+    writeWeaponsToFile wpns $ (last . init) $ splitOn "/" $ snd wu
 
 allWpnsToJSON :: [(WeaponType, URL)] -> IO ()
 allWpnsToJSON = mapM_ wpnPageToJSON
 
 main :: IO ()
-main = do
-    putStrLn "hi"
-
+main = allWpnsToJSON urlsWithTypes
