@@ -11,7 +11,8 @@ data Character = Character
     , _level   :: Int
     , _xp      :: Int
     , _curHP   :: Int -- need better way to represent
-    , _stats   :: Stats
+    , _con     :: Int -- above
+    , _stats   :: Stats -- TODO different types for growths and stats
     , _growths :: Stats
     , _items   :: [Weapon] } deriving Show
 
