@@ -1,5 +1,6 @@
 module Combat where
 import Control.Lens
+import qualified Data.Map as Map
 import System.Random
 import Examples
 import Misc
@@ -28,18 +29,18 @@ accuracy char = (char ^. (stats . skl) * 2) +
     (char ^. (stats . lck) `div` 2) +
     (char ^. items) !! 0 ^. hit
 
--- No weapon triangle yet
+-- TODO weapon triangle
 hitRate :: Character -> Character -> Int
 hitRate attacker target = max (accuracy attacker - avoid target) 0
 
--- in the future we'll have the Nothing propagate through and just skip 
+-- TODO have the Nothing propagate through and just skip 
 -- the attack of a character who can't.
 critRate :: Character -> Character -> Int
 critRate attacker target = case critical target of
     (Just crt) -> max 0 $ crt - (critAvo target)
     Nothing    -> 0
 
--- again, no weapon triangle
+-- TODO again, no weapon triangle
 -- rename "atk"?
 damageDone :: Character -> Character -> Int
 damageDone attacker target = case dmg attacker of
@@ -76,25 +77,28 @@ whoDoubles (char1, char2)
 survived :: Character -> Int -> Bool
 survived c dmg = dmg < c ^. curHP
 
-attack :: (Character, Character) -> Int -> Int -> BattleStatus
-attack (attacker, target) hitRoll critRoll
-    | hitRoll <= hitChance = if critRoll <= critChance
-                            then BattleStatus 
-                                { _lastRound = if target `survived` critDamage
-                                    then CritVictory critDamage 
-                                    else Critical critDamage
-                                , _lastAttacker = attacker
-                                , _lastTarget = curHP -~ (damage * 3) $ target }
-                            else BattleStatus
-                                { _lastRound = if target `survived` damage
-                                    then Victory damage 
-                                    else Hit damage
-                                , _lastAttacker = attacker
-                                , _lastTarget = curHP -~ damage $ target }
-    | otherwise            = BattleStatus
-                                { _lastRound = Miss
-                                , _lastAttacker = attacker
-                                , _lastTarget = target }
+attack :: (Character, Character) -> Int -> Int -> Battle
+attack (attacker, target) rHit rCrit
+    | rHit <= hitChance = if rCrit <= critChance
+                        then Battle
+                            { _lastRound = if target `survived` critDamage
+                                then CritVictory critDamage 
+                                else Critical critDamage
+                            , _lastAttacker = attacker
+                            , _lastTarget = curHP -~ (damage * 3) $ target
+                            , _expTotals = Map.insert undefined undefined undefined }
+                        else Battle
+                            { _lastRound = if target `survived` damage
+                                then Victory damage 
+                                else Hit damage
+                            , _lastAttacker = attacker
+                            , _lastTarget = curHP -~ damage $ target
+                            , _expTotals = Map.insert undefined undefined undefined }
+    | otherwise         = Battle
+                            { _lastRound = Miss
+                            , _lastAttacker = attacker
+                            , _lastTarget = target
+                            , _expTotals = Map.insert undefined undefined undefined }
     where
         hitChance  = hitRate attacker target
         critChance = critRate attacker target
@@ -104,7 +108,7 @@ attack (attacker, target) hitRoll critRoll
 fightRound :: (RandomGen g) => 
     (Character, Character) -> -- (first attacker, first target)
     g -> 
-    IO BattleStatus -- we're printing messages for debugging
+    IO Battle -- we're printing messages for debugging
 fightRound (char1, char2) gen = case whoDoubles (char1, char2) of
     Just someone -> do
         let [hitRoll1, critRoll1, hitRoll2, critRoll2, hitRoll3, critRoll3] = take 6 $ randomRs (1, 100) gen
@@ -163,7 +167,7 @@ fightRound (char1, char2) gen = case whoDoubles (char1, char2) of
                 putStrLn $ prettyPrintStatus status2
                 return status2
 
-fightLoop :: (RandomGen g) => IO BattleStatus -> g -> Int -> IO BattleStatus
+fightLoop :: (RandomGen g) => IO Battle -> g -> Int -> IO Battle
 fightLoop status gen x = do
     status' <- status
     case status' ^. lastRound of 
@@ -175,16 +179,17 @@ fightLoop status gen x = do
             gen' <- newStdGen
             fightLoop (return status'') gen' (succ x)
 
-startFight :: (RandomGen g) => (Character, Character) -> g -> IO BattleStatus
+startFight :: (RandomGen g) => (Character, Character) -> g -> IO Battle
 startFight (attacker, target) gen = fightLoop (return $ initBattleStatus (attacker, target)) gen 1
 
-initBattleStatus :: (Character, Character) -> BattleStatus
-initBattleStatus (attacker, target) = BattleStatus
+initBattleStatus :: (Character, Character) -> Battle
+initBattleStatus (attacker, target) = Battle
     { _lastRound = Start
     , _lastAttacker = attacker
-    , _lastTarget = target }
+    , _lastTarget = target 
+    , _expTotals = Map.fromList [(attacker ^. name, 0), (target ^. name, 0 )] }
 
-fight :: (Character, Character) -> IO BattleStatus
+fight :: (Character, Character) -> IO Battle
 fight (char1, char2) = do
     gen <- getStdGen
     let (char1AtkFirst, _) = random gen :: (Bool, StdGen)

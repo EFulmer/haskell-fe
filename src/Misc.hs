@@ -2,12 +2,12 @@ module Misc where
 import Control.Lens
 import Types
 
-fightFinished :: BattleStatus -> Bool
+fightFinished :: Battle -> Bool
 fightFinished status = case status ^. lastRound of
     Victory _ -> True
     _         -> False
 
-prettyPrintStatus :: BattleStatus -> String
+prettyPrintStatus :: Battle -> String
 prettyPrintStatus status = case status ^. lastRound of
     Miss        -> attacker' ++ " missed " ++ target' ++ "!"
     Hit x       -> attacker' ++ " hits " ++ target' ++ " for " ++ show x ++ 

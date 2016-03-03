@@ -2,6 +2,7 @@
 module Types where
 import Control.Lens
 import Data.Aeson
+import qualified Data.Map as Map
 import GHC.Generics
 
 data Character = Character 
@@ -41,10 +42,11 @@ data BattleResult = BattleResult
 data CombatResult = Start | Miss | Hit Int | Critical Int | 
     Victory Int | CritVictory Int deriving (Show, Eq)
 
-data BattleStatus = BattleStatus 
+data Battle = Battle
     { _lastRound    :: CombatResult
     , _lastAttacker :: Character
-    , _lastTarget   :: Character } deriving Show
+    , _lastTarget   :: Character
+    , _expTotals    :: Map.Map String Int } deriving Show
 
 data WeaponType = Physical PhysWeapon 
                 | Magical MagWeapon deriving (Eq, Generic, Show)
@@ -69,6 +71,6 @@ instance ToJSON MagWeapon
 makeLenses ''Character
 makeLenses ''Stats
 makeLenses ''Weapon
-makeLenses ''BattleStatus
+makeLenses ''Battle
 makeLenses ''BattleResult
 
