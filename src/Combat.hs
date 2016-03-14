@@ -14,9 +14,10 @@ atkSpd char
           wgt = (char ^. items) !! 0 ^. wt
 
 avoid :: Character -> Int
-avoid char = char ^. (stats . spd) * 2 + char ^. (stats . lck)
+avoid char = atkSpd char  * 2 + char ^. (stats . lck)
 
--- character with no weapons can't attack
+-- Return a Maybe because a character with no weapons can't attack.
+-- TODO account for non-weapon items (staffs, etc)
 dmg :: Character -> Maybe Int
 dmg char = if length (char ^. items) > 0 
     then Just $ char ^. (stats . pow) + (char ^. items) !! 0 ^. mt
