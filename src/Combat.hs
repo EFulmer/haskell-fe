@@ -39,14 +39,21 @@ accuracy char = (char ^. (stats . skl) * 2) +
 
 wta :: Character -> Character -> Maybe Character
 wta c1 c2 = 
-    if null (c1 ^. items) || null (c2 ^. items)
-    then Nothing
-    else case ((c1 ^. items) !! 0, (c2 ^. items) !! 0) of
-        _ -> undefined
+    case ((c1 ^. items), (c2 ^. items)) of
+        ((x:xs), (y:ys)) -> case (x ^. kind) `compare` (y ^. kind) of
+            LT -> Just c2
+            EQ -> Nothing
+            GT -> Just c1
+        _ -> Nothing
 
 -- TODO weapon triangle
 hitRate :: Character -> Character -> Int
-hitRate attacker target = max (accuracy attacker - avoid target) 0
+hitRate attacker target = max 0 $ 
+    case wta attacker target of
+        Nothing   -> (accuracy attacker - avoid target)
+        Just char -> if char ^. name == attacker ^. name
+            then (accuracy attacker + 15) - (avoid target)
+            else (accuracy attacker - 15) - (avoid target)
 
 -- TODO have the Nothing propagate through and just skip 
 -- the attack of a character who can't.
