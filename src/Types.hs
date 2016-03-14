@@ -58,6 +58,30 @@ data MagWeapon = Light | Dark | Anima deriving (Eq, Generic, Read, Show)
 
 data WpnRank = E | D | C | B | A | S | Prf deriving (Eq, Generic, Read, Show)
 
+instance Ord WeaponType where
+    (Magical _) `compare` (Physical _)    = EQ
+    (Physical _) `compare` (Magical _)    = EQ
+    (Magical m1) `compare` (Magical m2)   = m1 `compare` m2
+    (Physical p1) `compare` (Physical p2) = p1 `compare` p2
+
+instance Ord PhysWeapon where
+    Axe   `compare` Lance = GT
+    Axe   `compare` Sword = LT
+    Lance `compare` Axe   = LT
+    Lance `compare` Sword = GT
+    Sword `compare` Axe   = GT
+    Sword `compare` Lance = LT 
+    _     `compare` _     = EQ
+
+instance Ord MagWeapon where
+    Anima `compare` Light = GT
+    Anima `compare` Dark  = LT
+    Dark  `compare` Anima = GT
+    Dark  `compare` Light = LT
+    Light `compare` Anima = LT
+    Light `compare` Dark  = GT
+    _     `compare` _     = EQ
+
 instance FromJSON Weapon
 instance ToJSON Weapon
 instance FromJSON WpnRank

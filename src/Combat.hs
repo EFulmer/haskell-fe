@@ -37,6 +37,13 @@ accuracy char = (char ^. (stats . skl) * 2) +
     (char ^. (stats . lck) `div` 2) +
     (char ^. items) !! 0 ^. hit
 
+wta :: Character -> Character -> Maybe Character
+wta c1 c2 = 
+    if null (c1 ^. items) || null (c2 ^. items)
+    then Nothing
+    else case ((c1 ^. items) !! 0, (c2 ^. items) !! 0) of
+        _ -> undefined
+
 -- TODO weapon triangle
 hitRate :: Character -> Character -> Int
 hitRate attacker target = max (accuracy attacker - avoid target) 0
