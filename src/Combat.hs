@@ -6,6 +6,13 @@ import Examples
 import Misc
 import Types
 
+atkSpd :: Character -> Int
+atkSpd char
+    | cn < wgt  = wgt - cn
+    | otherwise = char ^. (stats . spd)
+    where cn = char ^. (stats . spd)
+          wgt = (char ^. items) !! 0 ^. wt
+
 avoid :: Character -> Int
 avoid char = char ^. (stats . spd) * 2 + char ^. (stats . lck)
 
