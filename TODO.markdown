@@ -1,1 +1,6 @@
-- Derive my own (fun exercise, which is the entire point of this!)
+- Main menu driver with different options:
+-- Create character.
+-- Battle existing characters.
+-- View characters.
+- TODO scraper.
+- Derive my own Lens and To/FromJSON instances (fun exercise, which is the entire point of this!)
