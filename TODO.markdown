@@ -1,6 +1,9 @@
+- (De)serialization of characters to/from JSON.
 - Main menu driver with different options:
 -- Create character.
 -- Battle existing characters.
 -- View characters.
-- TODO scraper.
-- Derive my own Lens and To/FromJSON instances (fun exercise, which is the entire point of this!)
+- Standardize indentation to 2 spaces.
+- *TESTS.*
+- Derive my own Lens, Generic, and To/FromJSON instances (fun exercise, which is the entire point of this!)
+- Maybe switch JSON for YAML later?
