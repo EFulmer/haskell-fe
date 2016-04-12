@@ -12,14 +12,20 @@ import           Types
 charToJSON :: Character -> B.ByteString
 charToJSON = encodePretty
 
-charFromJSON :: B.ByteString -> Maybe Character
-charFromJSON = decode
 
 charToFile :: Character -> FilePath -> IO ()
 charToFile char f = B.writeFile f (encodePretty char)
 
 charsToFile :: [Character] -> FilePath -> ()
 charsToFile chars f = mapM_ (flip B.appendFile) (fmap encodePretty chars) f
+
+charFromJSON :: B.ByteString -> Maybe Character
+charFromJSON = decode
+
+charFromFile :: FilePath -> IO (Maybe Character)
+charFromFile f = do
+  cJSON <- B.readFile f
+  return $  charFromJSON cJSON
 
 fightFinished :: Battle -> Bool
 fightFinished status = case status ^. lastRound of
