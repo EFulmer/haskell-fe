@@ -61,7 +61,7 @@ data Turn = DoubleAttack (Move, Move, Move)
 -- A fight can be represented as a list of turns, most recent first. 
 -- Cons each move onto the head. From that we can reconstruct the fight in a
 -- referentially transparent way.
-type Fight = [Move]
+type Fight = [Turn]
 
 data WeaponType = Physical PhysWeapon 
                 | Magical MagWeapon deriving (Eq, Generic, Show)

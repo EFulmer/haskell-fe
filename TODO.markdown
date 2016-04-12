@@ -1,4 +1,4 @@
-- Redo battling; battle data structure should be a stack of moves, and folding
+- Refactor battling; battle data structure should be a stack of moves, and folding
   through it should yield a tuple of (Char1's XP gains, Char2's XP gains)
 - Main menu driver with different options:
 -- Create character.
