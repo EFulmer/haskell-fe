@@ -49,6 +49,20 @@ data Battle = Battle
             , _lastTarget   :: Character
             , _expTotals    :: Map.Map String Int } deriving Show
 
+-- New battle data structure:
+data Move = Move
+          { _attacker :: Character
+          , _target   :: Character
+          , _result   :: CombatResult } deriving Show
+
+data Turn = DoubleAttack (Move, Move, Move) 
+          | SingleAttack (Move, Move) deriving Show
+
+-- A fight can be represented as a list of turns, most recent first. 
+-- Cons each move onto the head. From that we can reconstruct the fight in a
+-- referentially transparent way.
+type Fight = [Move]
+
 data WeaponType = Physical PhysWeapon 
                 | Magical MagWeapon deriving (Eq, Generic, Show)
 
@@ -102,4 +116,6 @@ makeLenses ''Stats
 makeLenses ''Weapon
 makeLenses ''Battle
 makeLenses ''BattleResult
+makeLenses ''Move
+makeLenses ''Turn
 
