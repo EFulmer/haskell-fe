@@ -1,0 +1,45 @@
+{
+    "_xp": 0,
+    "_con": 13,
+    "_growths": {
+        "_hp": 90,
+        "_pow": 60,
+        "_spd": 35,
+        "_lck": 30,
+        "_skl": 45,
+        "_res": 25,
+        "_def": 50
+    },
+    "_name": "Hector",
+    "_level": 1,
+    "_curHP": 19,
+    "_stats": {
+        "_hp": 19,
+        "_pow": 7,
+        "_spd": 5,
+        "_lck": 3,
+        "_skl": 4,
+        "_res": 0,
+        "_def": 8
+    },
+    "_klass": "Lord",
+    "_items": [
+        {
+            "_rng": [
+                1,
+                1
+            ],
+            "_hit": 75,
+            "_mt": 10,
+            "_wt": 10,
+            "_uses": 30,
+            "_kind": {
+                "tag": "Physical",
+                "contents": "Axe"
+            },
+            "_wpName": "Wolf Beil",
+            "_crit": 5,
+            "_rank": "Prf"
+        }
+    ]
+}

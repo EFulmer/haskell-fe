@@ -1,13 +1,25 @@
 module Misc where
 
+import           Control.Monad                 (mapM_)
 import qualified Data.ByteString.Lazy     as B
+
 import           Control.Lens
+import           Data.Aeson                    (decode)
 import           Data.Aeson.Encode.Pretty      (encodePretty)
 
 import           Types
 
 charToJSON :: Character -> B.ByteString
 charToJSON = encodePretty
+
+charFromJSON :: B.ByteString -> Maybe Character
+charFromJSON = decode
+
+charToFile :: Character -> FilePath -> IO ()
+charToFile char f = B.writeFile f (encodePretty char)
+
+charsToFile :: [Character] -> FilePath -> ()
+charsToFile chars f = mapM_ (flip B.appendFile) (fmap encodePretty chars) f
 
 fightFinished :: Battle -> Bool
 fightFinished status = case status ^. lastRound of

@@ -1,0 +1,45 @@
+{
+    "_xp": 0,
+    "_con": 7,
+    "_growths": {
+        "_hp": 80,
+        "_pow": 45,
+        "_spd": 50,
+        "_lck": 45,
+        "_skl": 50,
+        "_res": 35,
+        "_def": 30
+    },
+    "_name": "Eliwood",
+    "_level": 1,
+    "_curHP": 18,
+    "_stats": {
+        "_hp": 18,
+        "_pow": 5,
+        "_spd": 7,
+        "_lck": 7,
+        "_skl": 5,
+        "_res": 0,
+        "_def": 5
+    },
+    "_klass": "Lord",
+    "_items": [
+        {
+            "_rng": [
+                1,
+                1
+            ],
+            "_hit": 95,
+            "_mt": 7,
+            "_wt": 5,
+            "_uses": 40,
+            "_kind": {
+                "tag": "Physical",
+                "contents": "Sword"
+            },
+            "_wpName": "Rapier",
+            "_crit": 10,
+            "_rank": "Prf"
+        }
+    ]
+}

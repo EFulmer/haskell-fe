@@ -1,0 +1,45 @@
+{
+    "_xp": 0,
+    "_con": 5,
+    "_growths": {
+        "_hp": 70,
+        "_pow": 40,
+        "_spd": 60,
+        "_lck": 55,
+        "_skl": 60,
+        "_res": 30,
+        "_def": 20
+    },
+    "_name": "Lyn",
+    "_level": 1,
+    "_curHP": 16,
+    "_stats": {
+        "_hp": 16,
+        "_pow": 4,
+        "_spd": 9,
+        "_lck": 5,
+        "_skl": 7,
+        "_res": 0,
+        "_def": 2
+    },
+    "_klass": "Lord",
+    "_items": [
+        {
+            "_rng": [
+                1,
+                1
+            ],
+            "_hit": 80,
+            "_mt": 8,
+            "_wt": 3,
+            "_uses": 45,
+            "_kind": {
+                "tag": "Physical",
+                "contents": "Sword"
+            },
+            "_wpName": "Mani Katti",
+            "_crit": 20,
+            "_rank": "Prf"
+        }
+    ]
+}
